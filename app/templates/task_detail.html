@@ -82,12 +82,13 @@
         <h2>Send a Message</h2>
     <form action="{{ url_for('send_message', task_id=task.id) }}" method="POST">
         <label for="recipient">Send to:</label>
-        <input type="text" name="recipient" placeholder="Enter recipient username" required><br>
+        <input type="text" name="recipient" value="{{ task.username }}" readonly>
         <textarea name="message" rows="3" placeholder="Type your message here..." required></textarea><br>
         <button type="submit">Send Message</button>
     </form>
 
-        
+
+
         
     </div>
 </body>
