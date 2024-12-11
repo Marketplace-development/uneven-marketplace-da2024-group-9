@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Coiny', cursive;
+            background-color: #f5f7fb;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #192a56;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .navbar img {
+            height: 60px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #192a56;
+        }
+        .add-listing {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .add-listing a {
+            background-color: #f79f1f;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .add-listing a:hover {
+            background-color: #e58e26;
+        }
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            background: #fff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .task-details {
+            flex-grow: 1;
+        }
+        .task-details h3 {
+            margin: 0 0 10px;
+            color: #192a56;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mark-completed {
+            background-color: #4caf50;
+        }
+        .remove-listing {
+            background-color: #e74c3c;
+        }
+        .hidden-form {
+            display: none;
+            margin-top: 10px;
+        }
+        select, input[type="number"], button.submit {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .submit {
+            background-color: #192a56;
+            color: white;
+            cursor: pointer;
+        }
+        .submit:hover {
+            background-color: #145089;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
+        <div>
+            <a href="/profile">My Profile</a>
+            <a href="/chats">Chats</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- Container -->
+    <div class="container">
+        <h1>Job Listings</h1>
+        <div class="add-listing">
+            <a href="/add_listing">Add Listing</a>
+        </div>
+
+        {% for task in tasks %}
+        <div class="task-card">
+            <!-- Task Details -->
+            <div class="task-details">
+                <h3>{{ task.title }}</h3>
+                <p><strong>Category:</strong> {{ task.category }}</p>
+                <p><strong>Location:</strong> {{ task.location }}</p>
+                {% if task.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo" style="width: 100px; height: 100px; border-radius: 5px;">
+                {% endif %}
+
+                {% if task.completed %}
+                    <p><strong>Completed by:</strong> {{ task.assigned_technician }}</p>
+                    <p><strong>Average Rating:</strong> {{ calculate_average_rating(task.assigned_technician) }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Buttons -->
+            {% if session['username'] == task.username and not task.completed %}
+            <div class="buttons">
+                <button class="mark-completed" onclick="showForm('form-{{ task.id }}')">Mark as Completed</button>
+                <form method="POST" action="{{ url_for('remove_listing', task_id=task.id) }}">
+                    <button type="submit" class="remove-listing">Remove Listing</button>
+                </form>
+            </div>
+            <div class="hidden-form" id="form-{{ task.id }}">
+                <form method="POST" action="{{ url_for('mark_completed_with_technician') }}">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <label for="technician">Who did it?</label>
+                    <select name="technician" required>
+                        <option value="">--Select Technician--</option>
+                        {% for tech, role in users.items() %}
+                            {% if role == 'technician' %}
+                                <option value="{{ tech }}">{{ tech }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <label for="rating">Rating:</label>
+                    <input type="number" name="rating" min="1" max="5" placeholder="1-5" required>
+                    <button type="submit" class="submit">Confirm</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function showForm(formId) {
+            var form = document.getElementById(formId);
+            if (form.style.display === "none" || form.style.display === "") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
+

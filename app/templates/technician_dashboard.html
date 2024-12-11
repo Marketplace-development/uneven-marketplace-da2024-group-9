@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Coiny', cursive;
+            background-color: #f5f7fb;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #192a56;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar img {
+            height: 60px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .task-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fff;
+        }
+        .task-card img {
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+        }
+        .task-card h2 {
+            margin: 0;
+            color: #192a56;
+        }
+        .task-card p {
+            margin: 5px 0;
+        }
+        .task-card a {
+            color: #f79f1f;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .task-card a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+    <div class="navbar">
+        <img src="../static/images/aakot.png" alt="Kotrepair Logo">
+        <div>
+            <a href="/profile" class="nav-link">My Profile</a>
+            <a href="/chats" class="nav-link">Chats</a>
+            <a href="/logout" class="nav-link">Logout</a>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <h1>Technician Dashboard</h1>
+        {% for task in tasks %}
+        <div class="task-card">
+            {% if task.photo %}
+            <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo">
+            {% endif %}
+            <div>
+                <h2>{{ task.title }}</h2>
+                <p><strong>Category:</strong> {{ task.category }}</p>
+                <p><strong>Location:</strong> {{ task.location }}</p>
+                <p><strong>Posted by:</strong> {{ task.username }}</p>
+                <a href="/task/{{ task.id }}">View Details</a>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

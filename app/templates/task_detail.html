@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Coiny', cursive;
+            background-color: #f5f7fb;
+            margin: 0;
+        }
+        .navbar {
+            background-color: #192a56;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .navbar img {
+            height: 60px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #192a56; text-align: center; }
+        p { margin: 10px 0; }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Coiny', cursive;
+        }
+        button {
+            background-color: #f79f1f;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Coiny', cursive;
+        }
+        button:hover { background-color: #e58e26; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
+        <div>
+            <a href="/profile">My Profile</a>
+            <a href="/chats">Chats</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h1>{{ task.title }}</h1>
+        <p><strong>Category:</strong> {{ task.category }}</p>
+        <p><strong>Description:</strong> {{ task.description }}</p>
+        <p><strong>Location:</strong> {{ task.location }}</p>
+        <p><strong>Address:</strong> {{ task.address }}</p>
+        <p><strong>Posted by:</strong> {{ task.username }}</p>
+        {% if task.photo %}
+        <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo" style="width:100%; margin-top:20px;">
+        {% endif %}
+
+        <!-- Send a Message Form -->
+        <h2>Send a Message</h2>
+    <form action="{{ url_for('send_message', task_id=task.id) }}" method="POST">
+        <label for="recipient">Send to:</label>
+        <input type="text" name="recipient" placeholder="Enter recipient username" required><br>
+        <textarea name="message" rows="3" placeholder="Type your message here..." required></textarea><br>
+        <button type="submit">Send Message</button>
+    </form>
+
+        
+        
+    </div>
+</body>
+</html>
