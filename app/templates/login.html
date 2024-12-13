@@ -50,6 +50,7 @@
             margin-bottom: 15px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            box-sizing: border-box; /* Hiermee wordt padding meegeteld in de breedte */
         }
 
         button {
@@ -61,8 +62,9 @@
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            font-family: 'Coiny', cursive; /* Coiny font toegevoegd */
-            font-size: 16px; /* Optionele grotere tekst */
+            font-family: 'Coiny', cursive;
+            font-size: 16px;
+            box-sizing: border-box; /* Ook hier box-sizing toepassen */
         }
 
         button:hover {
