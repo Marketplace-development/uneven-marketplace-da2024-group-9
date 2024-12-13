@@ -6,12 +6,15 @@
     <title>Job Listings</title>
     <link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
     <style>
+        /* Algemene stijlen */
         body {
             font-family: 'Coiny', cursive;
             background-color: #f5f7fb;
             margin: 0;
-            padding-bottom: 60px; /* Ruimte voor vaste footer */
+            padding-bottom: 60px; /* Ruimte voor de footer */
         }
+
+        /* Navbar */
         .navbar {
             background-color: #192a56;
             padding: 15px;
@@ -20,18 +23,23 @@
             align-items: center;
             color: white;
         }
+
         .navbar img {
             height: 60px;
         }
+
         .navbar a {
             color: white;
             text-decoration: none;
             font-weight: bold;
             margin-left: 15px;
         }
+
         .navbar a:hover {
             text-decoration: underline;
         }
+
+        /* Container */
         .container {
             max-width: 900px;
             margin: 20px auto;
@@ -40,14 +48,18 @@
             padding: 20px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             text-align: center;
             color: #192a56;
         }
+
+        /* Add listing knop */
         .add-listing {
             text-align: center;
             margin-bottom: 20px;
         }
+
         .add-listing a {
             background-color: #f79f1f;
             color: white;
@@ -56,9 +68,12 @@
             border-radius: 5px;
             font-weight: bold;
         }
+
         .add-listing a:hover {
             background-color: #e58e26;
         }
+
+        /* Taakkaart */
         .task-card {
             display: flex;
             justify-content: space-between;
@@ -70,17 +85,22 @@
             background: #fff;
             box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .task-details {
             flex-grow: 1;
         }
+
         .task-details h3 {
             margin: 0 0 10px;
             color: #192a56;
         }
+
+        /* Knoppen */
         .buttons {
             display: flex;
             gap: 10px;
         }
+
         button {
             padding: 10px;
             border: none;
@@ -89,29 +109,56 @@
             font-weight: bold;
             cursor: pointer;
         }
+
         .mark-completed {
             background-color: #4caf50;
         }
+
         .remove-listing {
             background-color: #e74c3c;
         }
+
+        /* Verbeterde formulierstijl */
         .hidden-form {
             display: none;
-            margin-top: 10px;
+            margin-top: 15px;
+            background-color: #f5f7fb;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        select, input[type="number"], button.submit {
-            padding: 8px;
-            border: 1px solid #ccc;
+
+        .hidden-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #192a56;
+        }
+
+        .hidden-form select, 
+        .hidden-form input[type="number"], 
+        .hidden-form button.submit {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 14px;
             border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
         }
-        .submit {
+
+        .hidden-form button.submit {
             background-color: #192a56;
             color: white;
             cursor: pointer;
         }
-        .submit:hover {
+
+        .hidden-form button.submit:hover {
             background-color: #145089;
         }
+
+        /* Footer */
         footer {
             background-color: #192a56;
             color: white;
@@ -122,10 +169,12 @@
             bottom: 0;
             width: 100%;
         }
+
         footer a {
             color: #f79f1f;
             text-decoration: none;
         }
+
         footer a:hover {
             text-decoration: underline;
         }
@@ -179,7 +228,7 @@
                     <input type="hidden" name="task_id" value="{{ task.id }}">
                     <label for="technician">Who did it?</label>
                     <select name="technician" required>
-                        <option value="">--Select Technician--</option>
+                        <option value="">-- Select Technician --</option>
                         {% for tech, role in users.items() %}
                             {% if role == 'technician' %}
                                 <option value="{{ tech }}">{{ tech }}</option>
@@ -188,7 +237,7 @@
                     </select>
                     <label for="rating">Rating:</label>
                     <input type="number" name="rating" min="1" max="5" placeholder="1-5" required>
-                    <button type="submit" class="submit">Confirm</button>
+                    <button type="submit" class="submit">Confirm Completion</button>
                 </form>
             </div>
             {% endif %}
@@ -205,11 +254,7 @@
     <script>
         function showForm(formId) {
             var form = document.getElementById(formId);
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block";
-            } else {
-                form.style.display = "none";
-            }
+            form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
         }
     </script>
 </body>
