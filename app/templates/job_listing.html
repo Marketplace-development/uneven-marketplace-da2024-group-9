@@ -10,6 +10,7 @@
             font-family: 'Coiny', cursive;
             background-color: #f5f7fb;
             margin: 0;
+            padding-bottom: 60px; /* Ruimte voor vaste footer */
         }
         .navbar {
             background-color: #192a56;
@@ -111,6 +112,23 @@
         .submit:hover {
             background-color: #145089;
         }
+        footer {
+            background-color: #192a56;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-family: 'Coiny', cursive;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        footer a {
+            color: #f79f1f;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +196,11 @@
         {% endfor %}
     </div>
 
+    <!-- Footer -->
+    <footer>
+        <p>©2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a></p>
+    </footer>
+
     <!-- JavaScript -->
     <script>
         function showForm(formId) {
@@ -191,4 +214,3 @@
     </script>
 </body>
 </html>
-

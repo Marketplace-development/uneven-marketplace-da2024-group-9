@@ -44,6 +44,8 @@
             padding: 10px;
             font-size: 14px;
             border-radius: 5px;
+            box-sizing: border-box; /* Zorgt dat borders en padding meegerekend worden */
+            border: 1px solid #ccc;
         }
         form button {
             background-color: #f79f1f;
@@ -51,9 +53,28 @@
             border: none;
             font-weight: bold;
             cursor: pointer;
+            font-family: 'Coiny', cursive; /* Coiny-lettertype toegepast */
+            font-size: 16px;
         }
         form button:hover {
             background-color: #e58e26;
+        }
+        footer {
+            background-color: #192a56;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-family: 'Coiny', cursive;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        footer a {
+            color: #f79f1f;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -89,12 +110,12 @@
             <button type="submit">Register</button>
         </form>
     </div>
+
+    <footer>
+        <p>©2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a></p>
+    </footer>
 </body>
 </html>
-<footer style="background-color: #192a56; color: white; text-align: center; padding: 10px 0; font-family: 'Coiny', cursive;">
-    <p>©2024 Kotrepair - All rights reserved | <a href="/contact" style="color: #f79f1f; text-decoration: none;">Contact Us</a></p>
-</footer>
-
 
 
 
