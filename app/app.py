@@ -4,6 +4,7 @@ import os
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
+
 # Simulated user data
 users = {
     'technician1': 'technician',
