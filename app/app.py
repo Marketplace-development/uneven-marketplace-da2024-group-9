@@ -1,10 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 import os
-
-app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY')
-
-
+app = Flask(__name__)  # Flask app initialiseren
+app.secret_key = 'your_super_secret_key'
 # Simulated user data
 users = {
     'technician1': 'technician',
