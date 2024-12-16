@@ -59,9 +59,18 @@
         form button:hover {
             background-color: #e58e26;
         }
+        /* Flash message styling */
+        .flash-error {
+            background-color: #e74c3c; /* Rood */
+            color: white;
+            padding: 10px;
+            margin-top: 10px; /* Onder de login knop */
+            border-radius: 5px;
+            text-align: center;
+        }
         .register-link {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
         .register-link a {
             color: #f79f1f;
@@ -91,7 +100,7 @@
 </head>
 <body>
     <div class="navbar">
-        <img src="../static/images/aakot.png" alt="Kotrepair Logo">
+        <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
     </div>
     <div class="container">
         <h1>Login</h1>
@@ -100,7 +109,19 @@
             <input type="text" id="username" name="username" required>
 
             <button type="submit">Login</button>
+
+            <!-- Flash Messages: Onder de login knop -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            <div class="flash-error">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </form>
+
         <div class="register-link">
             <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
         </div>
