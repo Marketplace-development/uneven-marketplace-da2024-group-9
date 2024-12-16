@@ -195,7 +195,7 @@
     <div class="container">
         <h1>Job Listings</h1>
         <div class="add-listing">
-            <a href="/add_listing">Add Listing</a>
+            <a href="{{ url_for('add_listing') }}">Add Listing</a>
         </div>
 
         {% for task in tasks %}

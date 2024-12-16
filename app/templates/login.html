@@ -11,108 +11,79 @@
             background-color: #f5f7fb;
             margin: 0;
         }
-
         .navbar {
             background-color: #192a56;
-            padding: 15px;
+            padding: 15px 20px;
+            color: white;
             text-align: center;
         }
-
         .navbar img {
             height: 60px;
         }
-
         .container {
             max-width: 400px;
-            margin: 50px auto;
+            margin: 20px auto;
             background-color: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
-
-        h1 {
+        .container h1 {
             text-align: center;
             color: #192a56;
         }
-
-        label {
-            color: #192a56;
-            font-size: 14px;
-            font-weight: bold;
+        form label {
             display: block;
             margin-bottom: 5px;
+            color: #192a56;
         }
-
-        input {
+        form input, form button {
+            display: block;
             width: 100%;
-            padding: 10px;
             margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box; /* Hiermee wordt padding meegeteld in de breedte */
-        }
-
-        button {
-            width: 100%;
             padding: 10px;
-            background-color: #f79f1f;
-            border: none;
-            color: white;
-            font-weight: bold;
+            font-size: 14px;
             border-radius: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+        }
+        form button {
+            background-color: #f79f1f;
+            color: #192a56;
+            border: none;
+            font-weight: bold;
             cursor: pointer;
             font-family: 'Coiny', cursive;
             font-size: 16px;
-            box-sizing: border-box; /* Ook hier box-sizing toepassen */
         }
-
-        button:hover {
+        form button:hover {
             background-color: #e58e26;
         }
-
         .register-link {
             text-align: center;
             margin-top: 10px;
         }
-
         .register-link a {
             color: #f79f1f;
-            font-weight: bold;
             text-decoration: none;
         }
-
         .register-link a:hover {
             text-decoration: underline;
         }
-
-        .flash {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 8px;
-            border: 1px solid #f5c6cb;
-            border-radius: 5px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 13px;
-            text-align: center;
-        }
-
         footer {
             background-color: #192a56;
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: 10px 0;
+            font-family: 'Coiny', cursive;
             position: fixed;
             bottom: 0;
             width: 100%;
         }
-
         footer a {
             color: #f79f1f;
             text-decoration: none;
         }
-
         footer a:hover {
             text-decoration: underline;
         }
@@ -122,31 +93,21 @@
     <div class="navbar">
         <img src="../static/images/aakot.png" alt="Kotrepair Logo">
     </div>
-
     <div class="container">
         <h1>Login</h1>
         <form method="POST">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
+
             <button type="submit">Login</button>
         </form>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
-
         <div class="register-link">
-            <p>Don't have an account? <a href="/register">Register here</a></p>
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
         </div>
     </div>
 
     <footer>
-        © 2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a>
+        <p>©2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a></p>
     </footer>
 </body>
 </html>
-

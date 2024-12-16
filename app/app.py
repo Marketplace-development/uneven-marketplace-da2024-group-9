@@ -1,7 +1,18 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from app.models import Job, User, Chat
+
+
+
 app = Flask(__name__)  # Flask app initialiseren
-app.secret_key = 'your_super_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:M4ZZRsVfdlUxTCXO@db.eupxuakhfykloqrojzbr.supabase.co:5432/postgres"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
+
+migrate = Migrate(app, db)
+
 # Simulated user data
 users = {
     'technician1': 'technician',
@@ -147,9 +158,11 @@ def chats_page():
 
 @app.route('/job_listing')
 def job_listing():
-    if 'username' not in session or session['user_type'] != 'student':
+    if 'username' not in session:
         return redirect('/login')
-    return render_template('job_listing.html', tasks=[t for t in tasks if not t['completed']], users=users)
+
+    tasks = Job.query.all()  # Haal alle taken op vanuit de database
+    return render_template('job_listing.html', tasks=tasks)
 
 
 
@@ -172,7 +185,7 @@ def technician_dashboard():
 
 @app.route('/add_listing', methods=['GET', 'POST'])
 def add_listing():
-    if 'username' not in session or session['user_type'] != 'student':
+    if 'username' not in session:
         return redirect('/login')
 
     if request.method == 'POST':
@@ -180,30 +193,23 @@ def add_listing():
         category = request.form['category']
         description = request.form['description']
         location = request.form['location']
-        address = request.form['address']
-        file = request.files.get('photo')
+        owner = User.query.filter_by(username=session['username']).first()
 
-        photo_filename = None
-        if file and '.' in file.filename:
-            photo_filename = file.filename
-            file.save(os.path.join('static/uploads', photo_filename))
-
-        tasks.append({
-            'id': f'task{len(tasks)+1}',
-            'title': title,
-            'category': category,
-            'description': description,
-            'location': location,
-            'address': address,
-            'photo': photo_filename,
-            'username': session['username'],
-            'assigned_technician': None,
-            'completed': False
-        })
-        flash('Task added successfully.', 'success')
-        return redirect('/job_listing')
+        if owner:
+            new_job = Job(
+                title=title,
+                category=category,
+                description=description,
+                location=location,
+                owner_id=owner.id
+            )
+            db.session.add(new_job)
+            db.session.commit()
+            flash('Task added successfully!', 'success')
+            return redirect('/job_listing')
 
     return render_template('add_listing.html')
+
 
 
 @app.route('/profile')

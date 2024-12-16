@@ -1,10 +1,18 @@
-from . import db
+from app import db
 
 class Listing(db.Model):
     __tablename__ = 'listings'
-    listing_id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, nullable=False)
-    name = db.Column(db.String(120), nullable=False)
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    picture = db.Column(db.Text, nullable=True)
-    status = db.Column(db.String(50), default='open')  # 'open', 'in progress', 'completed'
+    location = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=True)
+    photo = db.Column(db.String(255), nullable=True)
+    username = db.Column(db.String(80), nullable=False)  
+
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    def __repr__(self):
+        return f"<Listing {self.title}>"

@@ -1,66 +1,71 @@
-from flask import render_template, request, redirect, url_for, session
-from flask import Blueprint
+from flask import render_template, redirect, url_for, flash, request, session, jsonify
+from app import db
+from app.models.student import Student
+from app.models.technician import Technician
+def init_routes(app):
+    @app.route('/')
+    def home():
+        return redirect(url_for('login'))
 
-# In-memory gebruikersdata
-users = set()
+    
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if request.method == 'POST':
+            username = request.form['username']
+            # Simuleer validatie voor studenten en technici
+            student = Student.query.filter_by(username=username).first()
+            technician = Technician.query.filter_by(username=username).first()
 
-main = Blueprint('main', __name__)
+            if student or technician:
+                session['username'] = username
+                flash('Login successful!', 'success')
+                return redirect(url_for('job_listing'))
+            else:
+                flash('Invalid username. Please try again.', 'error')
+        return render_template('login.html')
+    
+    @app.route("/register", methods=["GET", "POST"])
+    def register():
+        if request.method == 'POST':
+            try:
+                # Data ophalen uit formulier
+                username = request.form['username']
+                first_name = request.form['firstname']
+                last_name = request.form['lastname']
+                email = request.form['email']
+                phone_number = request.form['phone']
+                role = request.form['user_type']
 
-@main.route('/')
-def index():
-    """Homepagina."""
-    # 1. Check of user ingelogd is via session
-    # 2. niet ingelogd - redirect naar login pagina
-    # 3. Wel ingelogd? Toon home pagina (return template in deze functie)
-    print(session)
+                print(f"Received data - Username: {username}, Role: {role}")  # Debugging
+
+                # Validatie voor duplicate gebruikers
+                if role == 'student':
+                    if Student.query.filter_by(username=username).first():
+                        flash('Student username already exists!', 'error')
+                        return redirect(url_for('register'))
+                    new_user = Student(username=username, first_name=first_name, last_name=last_name, email=email, phone_number=phone_number)
+                elif role == 'technician':
+                    if Technician.query.filter_by(username=username).first():
+                        flash('Technician username already exists!', 'error')
+                        return redirect(url_for('register'))
+                    new_user = Technician(username=username, first_name=first_name, last_name=last_name, email=email, phone_number=phone_number)
+                else:
+                    flash('Invalid role selected!', 'error')
+                    return redirect(url_for('register'))
+
+                # Toevoegen aan database
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Registration successful! Please login.', 'success')
+                return redirect(url_for('login'))
+            
+            except Exception as e:
+                db.session.rollback()  # Zorg dat er geen corrupte transacties ontstaan
+                print(f"Error during registration: {e}")  # Log fout
+                flash('An error occurred during registration.', 'error')
+                return redirect(url_for('register'))
+
+        return render_template('register.html')
 
 
-    username = session.get('username')
-    if username:
-        return f"Welcome, {username}!"
-    return "You are not logged in. Please login or register."
 
-@main.route('/login', methods=['GET', 'POST'])
-def login():
-    """Loginpagina."""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        if username in users:
-            session['username'] = username
-            return redirect(url_for('index'))
-        else:
-            return "User not found. Please register first.", 401
-    return render_template('login.html')  # Verwijzing naar login.html
-
-@main.route('/register', methods=['GET', 'POST'])
-def register():
-    """Registerpagina."""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        if username not in users:
-            users.add(username)
-            session['username'] = username
-            return redirect(url_for('index'))
-        else:
-            return "User already exists. Please login.", 400
-    return render_template('register.html')  # Verwijzing naar register.html
-
-@main.route('/logout', methods=['POST'])
-def logout():
-    """Uitloggen."""
-    session.pop('username', None)
-    return redirect(url_for('index'))
-
-@main.route('/identify_role', methods=['POST'])
-def identify_role():
-    """Identify Role"""
-    return 'ADMIN'
-
-@main.route('/overview')
-def overview():
-    db
-
-@main.route('/listing')  # Lowercase route
-def listing():
-    """Render the listing page."""
-    return render_template('listing.html')  # Match template filename
