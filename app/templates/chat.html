@@ -61,16 +61,20 @@
             padding: 8px 12px;
             border-radius: 8px;
             max-width: 70%;
+            color: white;
+            word-wrap: break-word;
         }
         .message.sent {
             background-color: #f79f1f;
             color: white;
             align-self: flex-end;
+            text-align: right;
         }
         .message.received {
             background-color: #e0e0e0;
             color: #333;
             align-self: flex-start;
+            text-align: left;
         }
         form {
             display: flex;
@@ -97,9 +101,25 @@
         button:hover {
             background-color: #e58e26;
         }
+        .back-button {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .back-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #192a56;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-button a:hover {
+            background-color: #145089;
+        }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
     <div class="navbar">
         <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
         <div>
@@ -109,32 +129,47 @@
         </div>
     </div>
 
+    <!-- Chats Container -->
     <div class="container">
+        <!-- Back to Listings knop bovenaan -->
+        <div class="back-button">
+            {% if user_type == 'student' %}
+                <a href="{{ url_for('job_listing') }}">Back to Listings</a>
+            {% elif user_type == 'technician' %}
+                <a href="{{ url_for('technician_dashboard') }}">Back to Dashboard</a>
+            {% endif %}
+        </div>
+
         <h1>Your Chats</h1>
         {% for chat_key, chat in chats.items() %}
-        <h2>Chat with {{ chat['partner'] }} 
-            (Rating: {{ calculate_average_rating(chat['partner']) }})
+        <h2>
+            Chat with {{ chat['partner'] }}
+            {% if chat['rating'] %}
+                <span style="font-size: 16px; color: #192a56;">
+                    (Average Rating: {{ chat['rating'] }} ⭐ - {{ chat['rating_count'] }} ratings)
+                </span>
+            {% endif %}
         </h2>
-        
-        
-        
-            <div class="chat-box">
-                {% for msg in chat['messages'] %}
-                    <div class="message {% if msg['sender'] == username %}sent{% else %}received{% endif %}">
-                        <strong>{{ msg['sender'] }}:</strong> {{ msg['message'] }}
-                    </div>
-                {% endfor %}
-            </div>
 
-            <!-- Form om antwoord te versturen -->
-            <form method="POST" action="{{ url_for('send_message', task_id=chat['task_id']) }}">
-                <input type="hidden" name="recipient" value="{{ chat['partner'] }}">
-                <textarea name="message" placeholder="Type your message here..." rows="3" required></textarea>
-                <button type="submit">Send</button>
-            </form>
+        <!-- Chat box -->
+        <div class="chat-box">
+            {% for msg in chat['messages'] %}
+                <div class="message {% if msg.sender_username == username %}sent{% else %}received{% endif %}">
+                    <strong>{{ msg.sender_username }}:</strong> {{ msg.message }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Form to send message -->
+        <form method="POST" action="{{ url_for('send_message') }}">
+            <input type="hidden" name="recipient" value="{{ chat['partner'] }}">
+            <textarea name="message" placeholder="Type your message here..." rows="3" required></textarea>
+            <button type="submit">Send</button>
+        </form>
         {% else %}
-            <p style="text-align: center;">No conversations found. Start a chat!</p>
+        <p style="text-align: center;">No conversations found. Start a chat!</p>
         {% endfor %}
     </div>
 </body>
 </html>
+

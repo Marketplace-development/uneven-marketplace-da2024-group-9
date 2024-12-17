@@ -63,11 +63,13 @@
         form input, form select, form textarea, form button {
             display: block;
             width: 100%;
+            box-sizing: border-box; /* Zorg dat alles dezelfde breedte heeft */
             margin-bottom: 15px;
             padding: 10px;
             font-size: 14px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            font-family: 'Coiny', cursive;
         }
 
         form button {
@@ -76,7 +78,6 @@
             border: none;
             font-weight: bold;
             cursor: pointer;
-            font-family: 'Coiny', cursive;
         }
 
         form button:hover {
@@ -120,7 +121,7 @@
             <input type="text" id="title" name="title" required>
 
             <label for="category">Category</label>
-            <select id="category" name="category" required>
+            <select name="category" id="category" required>
                 <option value="" disabled selected>Select a category</option>
                 <option value="electricity">Electricity</option>
                 <option value="windows and doors">Windows and Doors</option>
@@ -151,3 +152,4 @@
     </footer>
 </body>
 </html>
+

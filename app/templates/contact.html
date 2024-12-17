@@ -11,17 +11,31 @@
             background-color: #f5f7fb;
             margin: 0;
         }
-
+        /* Navbar Stijlen */
         .navbar {
             background-color: #192a56;
             padding: 15px 20px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
         .navbar img {
             height: 60px;
         }
+        .navbar .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
 
+        /* Container Stijlen */
         .container {
             max-width: 600px;
             margin: 50px auto;
@@ -31,22 +45,20 @@
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
         .container h1 {
-            color: #f79f1f; /* Oranje kleur voor "Contact Us" */
+            color: #f79f1f;
             margin-bottom: 20px;
         }
-
         .contact-details p {
             font-size: 18px;
             margin: 10px 0;
-            color: #192a56; /* Blauw voor de gegevens */
+            color: #192a56;
         }
-
         .contact-details p span {
             font-weight: bold;
         }
 
+        /* Footer Stijlen */
         .footer {
             background-color: #192a56;
             color: white;
@@ -56,24 +68,27 @@
             bottom: 0;
             width: 100%;
         }
-
         .footer a {
             color: #f79f1f;
             text-decoration: none;
             font-weight: bold;
         }
-
         .footer a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
     <div class="navbar">
-        <img src="../static/images/aakot.png" alt="Kotrepair Logo">
-        <a href="/chats" class="nav-link">Chats</a>
-        <a href="/logout" class="nav-link">Logout</a>
+        <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
+        <div class="nav-links">
+            <a href="{{ url_for('chats') }}">Chats</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
     </div>
+
+    <!-- Contact Container -->
     <div class="container">
         <h1>Contact Us</h1>
         <div class="contact-details">
@@ -84,8 +99,10 @@
             <p>If you have any questions or need help, feel free to reach out to us!</p>
         </div>
     </div>
+
+    <!-- Footer -->
     <div class="footer">
-        <p>© 2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a></p>
+        <p>© 2024 Kotrepair - All rights reserved | <a href="{{ url_for('contact') }}">Contact Us</a></p>
     </div>
 </body>
 </html>

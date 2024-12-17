@@ -1,1 +1,35 @@
+@app.route('/chats')
+    def chats():
+        if 'username' not in session:
+            flash("You must be logged in to view chats.", "error")
+            return redirect(url_for('login'))
+        
+        username = session['username']
 
+        # Haal alle unieke chats voor de huidige gebruiker
+        partners = db.session.query(
+            ChatMessage.sender_username, ChatMessage.receiver_username
+        ).filter(
+            (ChatMessage.sender_username == username) | (ChatMessage.receiver_username == username)
+        ).distinct().all()
+
+        chats = {}
+        for sender, receiver in partners:
+            partner = receiver if sender == username else sender
+            messages = ChatMessage.query.filter(
+                ((ChatMessage.sender_username == username) & (ChatMessage.receiver_username == partner)) |
+                ((ChatMessage.sender_username == partner) & (ChatMessage.receiver_username == username))
+            ).order_by(ChatMessage.timestamp.asc()).all()
+
+            technician = Technician.query.filter_by(username=partner).first()
+            rating = technician.rating if technician else "N/A"
+            rating_count = technician.rating_count if technician else 0
+            
+            chats[partner] = {
+                'partner': partner,
+                'messages': messages,
+                'rating': rating,
+                'rating_count': rating_count
+            }
+
+        return render_template('chat.html', chats=chats, username=username)

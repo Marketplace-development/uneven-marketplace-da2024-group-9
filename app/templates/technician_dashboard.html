@@ -67,6 +67,24 @@
         .task-card a:hover {
             text-decoration: underline;
         }
+        .footer {
+            background-color: #192a56;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-family: 'Coiny', cursive;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .footer a {
+            color: #f79f1f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
     <div class="navbar">
@@ -84,20 +102,31 @@
         {% for task in tasks %}
         <div class="task-card">
             {% if task.photo %}
-            <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo">
+                <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo" 
+                    style="width: 100px; height: 100px; border-radius: 5px;">
             {% else %}
-            <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo">
+                <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo" 
+                    style="width: 100px; height: 100px; border-radius: 5px;">
             {% endif %}
+
             <div>
                 <h2>{{ task.title }}</h2>
                 <p><strong>Category:</strong> {{ task.category }}</p>
                 <p><strong>Location:</strong> {{ task.location }}</p>
                 <p><strong>Posted by:</strong> {{ task.username }}</p>
-                <a href="/task/{{ task.id }}">View Details</a>
+                
+
+                <a href="{{ url_for('task_detail', task_id=task.id) }}" class="view-details-btn">
+                    View Details
+                </a>
+                
 
             </div>
         </div>
         {% endfor %}
+    </div>
+    <div class="footer">
+        <p>© 2024 Kotrepair - All rights reserved | <a href="{{ url_for('contact') }}">Contact Us</a></p>
     </div>
 </body>
 </html>

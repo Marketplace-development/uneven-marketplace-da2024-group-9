@@ -10,6 +10,7 @@
             background-color: #f5f7fb;
             margin: 0;
             text-align: center;
+            padding-bottom: 60px;
         }
         .navbar {
             background-color: #192a56;
@@ -19,9 +20,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .navbar img {
-            height: 60px;
-        }
+        .navbar img { height: 60px; }
         .navbar a {
             color: white;
             text-decoration: none;
@@ -37,16 +36,8 @@
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        h1 {
-            color: #f79f1f;
-            margin-bottom: 20px;
-            font-size: 28px;
-        }
-        p {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #192a56;
-        }
+        h1 { color: #f79f1f; margin-bottom: 20px; font-size: 28px; }
+        p { font-size: 18px; margin: 10px 0; color: #192a56; }
         .back-link {
             text-decoration: none;
             color: white;
@@ -60,11 +51,28 @@
             left: 20px;
             box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .back-link:hover {
-            background-color: #e58e26;
+        .back-link:hover { background-color: #e58e26; }
+        .content { padding-top: 20px; }
+        .footer {
+            background-color: #192a56;
+            color: white;
+            text-align: center;
+            padding: 15px 0; /* Brede balk door meer padding */
+            font-family: 'Coiny', cursive;
+            font-size: 14px; /* Kleiner lettertype */
+            margin-top: 30px;
         }
-        .content {
-            padding-top: 20px;
+        .footer p {
+            margin: 0;
+            color: white;
+        }
+        .footer a {
+            color: #f79f1f;
+            text-decoration: none;
+            font-size: 14px; /* Kleiner lettertype voor link */
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -72,8 +80,8 @@
     <div class="navbar">
         <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Kotrepair Logo">
         <div>
-            <a href="/chats">Chats</a>
-            <a href="/logout">Logout</a>
+            <a href="{{ url_for('chats') }}">Chats</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         </div>
     </div>
     <div class="container">
@@ -81,11 +89,15 @@
         <div class="content">
             <h1>My Profile</h1>
             <p><strong>Username:</strong> {{ username }}</p>
-            <p><strong>User Type:</strong> {{ user_type }}</p>
-            {% if user_type == 'technician' %}
-                <p><strong>Average Rating:</strong> {{ calculate_average_rating(username) }}</p>
+            <p><strong>User Type:</strong> {{ user_type | capitalize }}</p>
+            {% if user_type == 'technician' and average_rating %}
+                <p><strong>Average Rating:</strong> {{ average_rating }}</p>
             {% endif %}
         </div>
     </div>
+    <div class="footer">
+        <p>©2024 Kotrepair - All rights reserved | <a href="{{ url_for('contact') }}">Contact Us</a></p>
+    </div>
 </body>
 </html>
+
