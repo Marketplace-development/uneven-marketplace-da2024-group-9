@@ -141,7 +141,7 @@
         </div>
 
         <h1>Your Chats</h1>
-        {% for chat_key, chat in chats.items() %}
+        {% for chat in chats %}
         <h2>
             Chat with {{ chat['partner'] }}
             {% if chat['rating'] %}

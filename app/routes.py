@@ -5,6 +5,7 @@ from app.models.technician import Technician
 from app.models.listing import Listing
 from app.models.chat import ChatMessage
 from app.models.transaction import Transaction
+from app.models.conversation import Conversation
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
@@ -169,68 +170,97 @@ def init_routes(app):
         
         username = session['username']
 
-        # Bepaal het user_type
-        student = Student.query.filter_by(username=username).first()
-        technician = Technician.query.filter_by(username=username).first()
+        # Haal het Student- of Technician-object op voor de huidige gebruiker
+        user = Student.query.filter_by(username=username).first() or Technician.query.filter_by(username=username).first()
+        if not user:
+            flash("User not found.", "error")
+            return redirect(url_for('login'))
 
-        if student:
-            user_type = 'student'
-        elif technician:
-            user_type = 'technician'
-        else:
-            user_type = 'unknown'
+        # Zoek conversaties waar de huidige gebruiker deelnemer is
+        if isinstance(user, Student):
+            conversations = Conversation.query.filter_by(student_id=user.id).order_by(Conversation.last_message_time.desc()).all()
+        elif isinstance(user, Technician):
+            conversations = Conversation.query.filter_by(technician_id=user.id).order_by(Conversation.last_message_time.desc()).all()
 
-        # Haal alle unieke chats voor de huidige gebruiker
-        partners = db.session.query(
-            ChatMessage.sender_username, ChatMessage.receiver_username
-        ).filter(
-            (ChatMessage.sender_username == username) | (ChatMessage.receiver_username == username)
-        ).distinct().all()
-
-        chats = {}
-        for sender, receiver in partners:
-            partner = receiver if sender == username else sender
-            messages = ChatMessage.query.filter(
-                ((ChatMessage.sender_username == username) & (ChatMessage.receiver_username == partner)) |
-                ((ChatMessage.sender_username == partner) & (ChatMessage.receiver_username == username))
-            ).order_by(ChatMessage.timestamp.asc()).all()
+        # Verzamel alle conversaties met bijbehorende berichten
+        chats = []
+        for convo in conversations:
+            # Bepaal de gesprekspartner
+            if isinstance(user, Student):
+                partner = Technician.query.get(convo.technician_id)
+            else:
+                partner = Student.query.get(convo.student_id)
             
-            # Haal de rating en rating_count op voor de technician
+            partner_username = partner.username if partner else "Unknown"
+
+            # Haal berichten binnen de conversatie op
+            messages = ChatMessage.query.filter_by(conversation_id=convo.id).order_by(ChatMessage.timestamp.asc()).all()
+
+            # Haal rating op voor technicians indien van toepassing
             technician_rating = None
             technician_rating_count = None
-            technician = Technician.query.filter_by(username=partner).first()
-            if technician:
-                technician_rating = round(technician.rating, 2) if technician.rating else None  # Directe toegang tot de rating
-                technician_rating_count = technician.rating_count  # Directe toegang tot rating_count
-            
-            chats[partner] = {
-                'partner': partner,
+            if isinstance(partner, Technician):
+                technician_rating = round(partner.rating, 2) if partner.rating else None
+                technician_rating_count = partner.rating_count
+
+            chats.append({
+                'partner': partner_username,
                 'messages': messages,
+                'conversation_id': convo.id,
                 'rating': technician_rating,
                 'rating_count': technician_rating_count
-            }
+            })
 
-        # Voeg user_type toe aan de render_template
-        return render_template('chat.html', chats=chats, username=username, user_type=user_type)
+        return render_template('chat.html', chats=chats, username=username)
 
-
-   
+    
     @app.route('/send_message', methods=['POST'])
     def send_message():
-        recipient = request.form.get('recipient')
-        message = request.form.get('message')
+        recipient_username = request.form.get('recipient')
+        sender_username = session['username']
 
+        # Valideer sender en recipient
+        sender = Student.query.filter_by(username=sender_username).first() or Technician.query.filter_by(username=sender_username).first()
+        recipient = Student.query.filter_by(username=recipient_username).first() or Technician.query.filter_by(username=recipient_username).first()
+
+        if not sender or not recipient:
+            flash("Invalid sender or recipient.", "error")
+            return redirect(url_for('chats'))
+
+        # Bepaal student en technician
+        student = sender if isinstance(sender, Student) else recipient
+        technician = sender if isinstance(sender, Technician) else recipient
+
+        # Controleer of er al een conversatie bestaat
+        conversation = Conversation.query.filter_by(student_id=student.id, technician_id=technician.id).first()
+
+        if not conversation:
+            conversation = Conversation(
+                student_id=student.id,
+                technician_id=technician.id,
+                last_message_time=datetime.now()
+            )
+            db.session.add(conversation)
+            db.session.flush()
+
+        # Voeg bericht toe
         new_message = ChatMessage(
-            sender_username=session['username'],
-            receiver_username=recipient,
-            message=message,
-            timestamp=datetime.now()
+            sender_username=sender_username,
+            receiver_username=recipient_username,
+            message=request.form.get('message'),
+            timestamp=datetime.now(),
+            conversation_id=conversation.id
         )
         db.session.add(new_message)
+
+        # Update laatste berichttijd
+        conversation.last_message_time = datetime.now()
         db.session.commit()
 
         flash('Message sent successfully!', 'success')
         return redirect(url_for('chats'))
+
+
 
 
 

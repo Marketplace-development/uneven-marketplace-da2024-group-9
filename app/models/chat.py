@@ -8,6 +8,7 @@ class ChatMessage(db.Model):
     receiver_username = db.Column(db.String(50), nullable=False)
     message = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversations.id'), nullable=False)
 
     def __repr__(self):
         return f"<ChatMessage {self.sender_username} -> {self.receiver_username}: {self.message}>"
