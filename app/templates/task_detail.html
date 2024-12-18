@@ -72,8 +72,13 @@
         <p><strong>Category:</strong> {{ task.category }}</p>
         <p><strong>Description:</strong> {{ task.description }}</p>
         <p><strong>Location:</strong> {{ task.location }}</p>
-        <p><strong>Address:</strong> {{ task.address }}</p>
+        <p><strong>Address:</strong> {{ task.address }}</p>      
         <p><strong>Posted by:</strong> {{ task.username }}</p>
+        {% if transaction %}
+            <p><strong>Price:</strong> €{{ transaction.price }}</p>
+            <p><strong>Status:</strong> {{ transaction.status }}</p>
+        
+        {% endif %}
         {% if task.photo %}
         <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo" style="width:100%; margin-top:20px;">
         {% endif %}

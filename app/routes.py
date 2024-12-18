@@ -1,13 +1,18 @@
-from flask import render_template, redirect, url_for, flash, request, session, jsonify
+from flask import render_template, redirect, url_for, flash, request, session, jsonify, Response
 from app import db
 from app.models.student import Student
 from app.models.technician import Technician
 from app.models.listing import Listing
 from app.models.chat import ChatMessage
+from app.models.transaction import Transaction
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy.sql import func
+from sqlalchemy.sql import func
+
+
+
 def init_routes(app):
     @app.route('/')
     def home():
@@ -81,7 +86,9 @@ def init_routes(app):
     def job_listing():
         # Logica om job listings op te halen
         technicians = Technician.query.all()
-        tasks = Listing.query.all()
+        tasks = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
+            (Transaction.status != "completed") | (Transaction.status == None)
+        ).all()
         for task in tasks:
          print(task.photo)
         
@@ -89,76 +96,67 @@ def init_routes(app):
     
     @app.route('/technician_dashboard')
     def technician_dashboard():
-        # Logica om technician dashboard data op te halen
-        tasks = Listing.query.all()
+        tasks = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
+            (Transaction.status != "completed") | (Transaction.status == None)
+        ).all()
         return render_template('technician_dashboard.html', tasks=tasks)
     
     @app.route('/add_listing', methods=['GET', 'POST'])
     def add_listing():
+        avg_price = None
+
+        # Handle POST Request - Nieuwe Listing Toevoegen
         if request.method == 'POST':
-            # Logica om een nieuwe job listing toe te voegen
             title = request.form['title']
-            category = request.form['category'] 
+            category = request.form['category']
             description = request.form['description']
             location = request.form['location']
             address = request.form['address']
+            price = float(request.form['price']) if request.form['price'] else None
             photo = request.files['photo']
-            
-            photo_filename = None
-            if photo:
-                photo_filename = secure_filename(photo.filename)
-                photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
-            if not category:
-                flash('Category is required!', 'error')
-                return redirect(url_for('add_listing'))
-            # Voorbeeld hoe je een nieuwe Listing kunt maken
+
+            photo_data = None
+            mime_type = None
+
+            if photo and photo.filename != '':
+                photo_data = photo.read()  # Lees de foto als binary data
+                mime_type = photo.mimetype
+
+            # Voeg de nieuwe listing toe
             new_listing = Listing(
                 title=title,
-                category = category,
+                category=category,
                 description=description,
                 location=location,
                 address=address,
-                photo=photo_filename,
-                username=session.get('username')  # Voeg huidige gebruiker toe
+                price=price,
+                photo=photo_data,
+                mime_type=mime_type,
+                username=session.get('username')  # Huidige gebruiker
             )
             db.session.add(new_listing)
             db.session.commit()
-            
+
             flash('Listing successfully added!', 'success')
             return redirect(url_for('job_listing'))
 
-        return render_template('add_listing.html')
-    
-    @app.route('/remove_listing/<int:task_id>', methods=['POST'])
-    def remove_listing(task_id):
-        task = Listing.query.get_or_404(task_id)
-        db.session.delete(task)
-        db.session.commit()
-        flash('Listing removed successfully!', 'success')
-        return redirect(url_for('job_listing'))
-    
-    @app.route('/mark_completed_with_technician', methods=['POST'])
-    def mark_completed_with_technician():
-        task_id = request.form['task_id']
-        technician_username = request.form['technician']
-        rating = int(request.form['rating'])
+        # Handle AJAX-aanroep voor gemiddelde prijs
+        if request.args.get('category'):
+            category = request.args.get('category')
+            avg_price = db.session.query(func.avg(Transaction.price)).join(Listing).filter(
+                Listing.category == category, Transaction.status == "completed"
+            ).scalar()
+            return jsonify({'avg_price': round(avg_price, 2) if avg_price else 'N/A'})
 
-        # Zoek de taak en de technieker
-        task = Listing.query.get_or_404(task_id)
-        technician = Technician.query.filter_by(username=technician_username).first()
-        if technician:
-            current_rating = technician.rating if technician.rating else 0.0
-            current_count = technician.rating_count if technician.rating_count else 0
+        # Render de pagina voor GET Request (zonder AJAX)
+        return render_template('add_listing.html', avg_price=avg_price)
 
-            technician.rating = (current_rating * current_count + rating) / (current_count + 1)
-            technician.rating_count = current_count + 1
-            db.session.delete(task)
-            db.session.commit()
-            flash('Task marked as completed and rating updated!', 'success')
-        else:
-            flash('Technician not found!', 'error')
-        
-        return redirect(url_for('job_listing'))
+    @app.route('/image/<int:listing_id>')
+    def get_image(listing_id):
+        listing = Listing.query.get_or_404(listing_id)
+        if not listing.photo:
+            return '', 404  # Geen afbeelding gevonden
+        return Response(listing.photo, mimetype=listing.mime_type)
 
     @app.route('/chats')
     def chats():
@@ -232,12 +230,7 @@ def init_routes(app):
         return redirect(url_for('chats'))
 
 
-    @app.route('/task/<int:task_id>', methods=['GET', 'POST'])
-    def other_task_detail(task_id):
-        # Taak ophalen uit de database
-        task = Listing.query.get_or_404(task_id)
-        # Rest van de logica
-        return render_template('task_detail.html', task=task)
+
 
     @app.route('/task_detail/<int:task_id>', methods=['GET', 'POST'])
     def task_detail(task_id):
@@ -247,7 +240,7 @@ def init_routes(app):
         
         # Haal taakdetails op uit de database
         task = Listing.query.get_or_404(task_id)
-
+        transaction = Transaction.query.filter_by(listing_id=task_id).first()
         if request.method == 'POST':
             sender = session['username']
             recipient = task.username
@@ -264,7 +257,7 @@ def init_routes(app):
             flash("Message sent successfully!", "success")
             return redirect(url_for('task_detail', task_id=task_id))
 
-        return render_template('task_detail.html', task=task)
+        return render_template('task_detail.html', task=task, transaction = transaction)
     
     
 
@@ -306,4 +299,88 @@ def init_routes(app):
     @app.route('/contact')
     def contact():
         return render_template('contact.html')
+    
+    @app.route('/get_avg_price', methods=['POST'])
+    def get_avg_price():
+        category = request.json.get('category')
+
+        # Bereken gemiddelde prijs van alle transacties met die categorie
+        avg_price = db.session.query(db.func.avg(Transaction.price)).join(Listing).filter(Listing.category == category).scalar()
+
+        return {'avg_price': round(avg_price, 2) if avg_price else 0}
+
+    
+    @app.route('/create_transaction/<int:listing_id>', methods=['POST'])
+    def create_transaction(listing_id):
+        if 'username' not in session:
+            flash("You must be logged in to perform this action.", "error")
+            return redirect(url_for('login'))
+
+        technician_username = session['username']
+        price = request.form['price']  # Prijs wordt opgegeven bij aanmaak
+
+        # Controleer of listing bestaat
+        listing = Listing.query.get_or_404(listing_id)
+
+        # Maak nieuwe transactie
+        new_transaction = Transaction(
+            listing_id=listing.id,
+            student_username=listing.username,  # Wie de taak postte
+            technician_username=technician_username,
+            price=float(price),  # Zorg dat de prijs een float is
+            status="pending"
+        )
+        db.session.add(new_transaction)
+        db.session.commit()
+
+        flash("Transaction created successfully!", "success")
+        return redirect(url_for('technician_dashboard'))
+    
+    @app.route('/remove_listing/<int:task_id>', methods=['POST'])
+    def remove_listing(task_id):
+        listing = Listing.query.get(task_id)
+        if listing:
+            db.session.delete(listing)
+            db.session.commit()
+            flash('Listing successfully removed!', 'success')
+        else:
+            flash('Listing not found!', 'error')
+        return redirect(url_for('job_listing'))
+    
+    @app.route('/mark_completed_with_technician/<int:task_id>', methods=['POST'])
+    def mark_completed_with_technician(task_id):
+        technician_username = request.form['technician']
+        rating = int(request.form['rating'])
+
+        listing = Listing.query.get_or_404(task_id)
+        price = listing.price
+        # Zoek of er al een transactie bestaat, zo niet, maak er een aan
+        transaction = Transaction.query.filter_by(listing_id=task_id).first()
+        if not transaction:
+            transaction = Transaction(
+                listing_id=task_id,
+                student_username=session['username'],  # Degene die de taak aanmaakte
+                technician_username=technician_username,
+                price=price,  # Geen prijs nodig, wordt apart beheerd
+                status="completed"
+            )
+            db.session.add(transaction)
+        else:
+            transaction.status = "completed"
+            transaction.price = price
+
+        # Update de rating van de technician
+        technician = Technician.query.filter_by(username=technician_username).first()
+        if technician:
+            technician.rating_count += 1
+            technician.rating = round(((technician.rating * (technician.rating_count - 1)) + rating) / technician.rating_count, 2)
+        
+       
+
+        
+        db.session.commit()
+        flash("Task marked as completed!", "success")
+        return redirect(url_for('job_listing'))
+
+
 

@@ -129,6 +129,8 @@
                 <option value="locks">Locks</option>
                 <option value="furniture">Furniture</option>
             </select>
+            
+
 
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="4" required></textarea>
@@ -138,6 +140,11 @@
 
             <label for="address">Address</label>
             <input type="text" id="address" name="address" required>
+
+            <p id="avg-price" style="color: green;">Average price for this category: €{{ avg_price or 'N/A' }}</p>
+
+            <label for="price">Price (€)</label>
+            <input type="number" id="price" name="price" step="0.01" placeholder="Enter price" required>
 
             <label for="photo">Add a Photo</label>
             <input type="file" id="photo" name="photo" accept="image/*">
@@ -150,6 +157,19 @@
     <footer>
         © 2024 Kotrepair - All rights reserved | <a href="/contact">Contact Us</a>
     </footer>
+    <script>
+    document.getElementById('category').addEventListener('change', function() {
+        const category = this.value;
+        fetch(`/add_listing?category=${category}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('avg-price').innerHTML = 
+                    `Average price for this category: €${data.avg_price || 'N/A'}`;
+            })
+            .catch(error => console.error("Error fetching average price:", error));
+    });
+    </script>
+        
 </body>
 </html>
 
