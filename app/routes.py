@@ -114,6 +114,8 @@ def init_routes(app):
             address = request.form['address']
             price = float(request.form['price']) if request.form['price'] else None
             photo = request.files['photo']
+            username = session['username']
+            student = Student.query.filter_by(username=username).first() 
 
             photo_data = None
             mime_type = None
@@ -132,7 +134,8 @@ def init_routes(app):
                 price=price,
                 photo=photo_data,
                 mime_type=mime_type,
-                username=session.get('username')  # Huidige gebruiker
+                username=username,
+                student_id=student.id  # Huidige gebruiker
             )
             db.session.add(new_listing)
             db.session.commit()
@@ -355,12 +358,16 @@ def init_routes(app):
         listing = Listing.query.get_or_404(task_id)
         price = listing.price
         # Zoek of er al een transactie bestaat, zo niet, maak er een aan
+        technician = Technician.query.filter_by(username=technician_username).first()
+
         transaction = Transaction.query.filter_by(listing_id=task_id).first()
         if not transaction:
+            
             transaction = Transaction(
                 listing_id=task_id,
-                student_username=session['username'],  # Degene die de taak aanmaakte
-                technician_username=technician_username,
+                student_username=session['username'],
+                technician_id = technician.id,  # Degene die de taak aanmaakte
+                technician_username=technician.username,
                 price=price,  # Geen prijs nodig, wordt apart beheerd
                 status="completed"
             )
@@ -368,6 +375,7 @@ def init_routes(app):
         else:
             transaction.status = "completed"
             transaction.price = price
+            technician = transaction.technician
 
         # Update de rating van de technician
         technician = Technician.query.filter_by(username=technician_username).first()

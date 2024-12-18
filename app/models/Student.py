@@ -10,4 +10,4 @@ class Student(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone_number = db.Column(db.String(20), nullable=True)
 
-    
+    listings = db.relationship('Listing', back_populates='student')
