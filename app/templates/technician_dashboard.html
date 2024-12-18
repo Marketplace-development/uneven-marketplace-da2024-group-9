@@ -8,8 +8,9 @@
     <style>
         body {
             font-family: 'Coiny', cursive;
-            background-color: #f5f7fb;
+            background-color: #f8f9fa; /* Lichtgrijs */
             margin: 0;
+            color: #192a56; /* Donkerblauw */
         }
         .navbar {
             background-color: #192a56;
@@ -17,6 +18,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: white;
         }
         .navbar img {
             height: 60px;
@@ -27,107 +29,145 @@
             margin-left: 15px;
             font-weight: bold;
         }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 20px auto;
             background-color: white;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .category-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .category-buttons a {
+            background-color: #f79f1f;
+            color: white;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .category-buttons a:hover, .category-buttons a.active {
+            background-color: #e58e26;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
         }
         .task-card {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 10px;
             background: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         .task-card img {
             width: 100px;
             height: 100px;
             margin-right: 20px;
+            border-radius: 8px;
+            object-fit: cover;
         }
         .task-card h2 {
-            margin: 0;
-            color: #192a56;
+            margin: 0 0 5px;
+            font-size: 20px;
         }
         .task-card p {
-            margin: 5px 0;
+            margin: 3px 0;
+            color: #000000;
+            font-size: 14px;
         }
         .task-card a {
-            color: #f79f1f;
-            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #192a56;
+            color: white;
             text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
         }
         .task-card a:hover {
-            text-decoration: underline;
+            background-color: #192a56;
         }
         .footer {
             background-color: #192a56;
             color: white;
             text-align: center;
             padding: 10px 0;
-            font-family: 'Coiny', cursive;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+            font-size: 14px;
         }
         .footer a {
             color: #f79f1f;
             text-decoration: none;
             font-weight: bold;
         }
-        .footer a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
+<body>
+    <!-- Navbar -->
     <div class="navbar">
         <img src="../static/images/aakot.png" alt="Kotrepair Logo">
         <div>
-            <a href="/profile" class="nav-link">My Profile</a>
-            <a href="/chats" class="nav-link">Chats</a>
-            <a href="/logout" class="nav-link">Logout</a>
+            <a href="/profile">My Profile</a>
+            <a href="/chats">Chats</a>
+            <a href="/logout">Logout</a>
         </div>
     </div>
 
-
+    <!-- Container -->
     <div class="container">
-        <h1>Technician Dashboard</h1>
+        <h1 style="text-align: center;">Technician Dashboard</h1>
+
+        <!-- Category Buttons -->
+        <div class="category-buttons">
+            <a href="{{ url_for('technician_dashboard') }}" class="{% if not selected_category %}active{% endif %}">All</a>
+            {% for category in ['Plumbing', 'Electricity', 'Windows and Doors', 'Locks', 'Furniture', 'Other'] %}
+                <a href="{{ url_for('technician_dashboard', category=category) }}" 
+                   class="{% if selected_category == category %}active{% endif %}">
+                    {{ category }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Task Cards -->
         {% for task in tasks %}
         <div class="task-card">
             {% if task.photo %}
-                <img src="{{ url_for('get_image', listing_id=task.id) }}" alt="Task Photo" 
-                    style="width: 100px; height: 100px; border-radius: 5px;">
+                <img src="{{ url_for('get_image', listing_id=task.id) }}" alt="Task Photo">
             {% else %}
-                <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo" 
-                    style="width: 100px; height: 100px; border-radius: 5px;">
+                <img src="{{ url_for('static', filename='images/aakot.png') }}" alt="Default Photo">
             {% endif %}
-
             <div>
                 <h2>{{ task.title }}</h2>
                 <p><strong>Category:</strong> {{ task.category }}</p>
                 <p><strong>Location:</strong> {{ task.location }}</p>
                 <p><strong>Price:</strong> €{{ "%.2f"|format(task.price) if task.price else "N/A" }}</p>
                 <p><strong>Posted by:</strong> {{ task.username }}</p>
-                
-
-                <a href="{{ url_for('task_detail', task_id=task.id) }}" class="view-details-btn">
-                    View Details
-                </a>
-                
-
+                <a href="{{ url_for('task_detail', task_id=task.id) }}">View Details</a>
             </div>
         </div>
+        {% else %}
+        <p style="text-align: center; font-size: 16px; color: #7f8c8d;">No tasks available for the selected category.</p>
         {% endfor %}
     </div>
+
+    <!-- Footer -->
     <div class="footer">
         <p>© 2024 Kotrepair - All rights reserved | <a href="{{ url_for('contact') }}">Contact Us</a></p>
     </div>
 </body>
 </html>
+

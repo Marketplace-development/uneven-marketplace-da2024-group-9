@@ -97,11 +97,23 @@ def init_routes(app):
     
     @app.route('/technician_dashboard')
     def technician_dashboard():
-        tasks = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
+        selected_category = request.args.get('category', default=None)
+
+        # Maak een query voor alle taken
+        query = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
             (Transaction.status != "completed") | (Transaction.status == None)
-        ).all()
-        return render_template('technician_dashboard.html', tasks=tasks)
-    
+        )
+
+        # Filter op geselecteerde categorie
+        if selected_category and selected_category in ['Plumbing', 'Electricity', 'Windows and Doors', 'Locks', 'Furniture', 'Other']:
+            query = query.filter(Listing.category == selected_category)
+
+        tasks = query.all()
+
+        return render_template('technician_dashboard.html', 
+                            tasks=tasks, 
+                            selected_category=selected_category)
+
     @app.route('/add_listing', methods=['GET', 'POST'])
     def add_listing():
         avg_price = None
@@ -384,18 +396,19 @@ def init_routes(app):
     def mark_completed_with_technician(task_id):
         technician_username = request.form['technician']
         rating = int(request.form['rating'])
-
+       
         listing = Listing.query.get_or_404(task_id)
         price = listing.price
+        student = listing.student
         # Zoek of er al een transactie bestaat, zo niet, maak er een aan
         technician = Technician.query.filter_by(username=technician_username).first()
-
+        
         transaction = Transaction.query.filter_by(listing_id=task_id).first()
         if not transaction:
             
             transaction = Transaction(
                 listing_id=task_id,
-                student_username=session['username'],
+                student_id = student.id,
                 technician_id = technician.id,  # Degene die de taak aanmaakte
                 technician_username=technician.username,
                 price=price,  # Geen prijs nodig, wordt apart beheerd

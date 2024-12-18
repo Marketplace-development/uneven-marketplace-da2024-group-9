@@ -82,9 +82,7 @@
         {% if task.photo %}
             <img src="{{ url_for('get_image', listing_id=task.id) }}" alt="Task Photo" 
                 style="width: 100px; height: 100px; border-radius: 5px;">
-        {% else %}
-            <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo" 
-                style="width: 100px; height: 100px; border-radius: 5px;">
+        
         {% endif %}
 
         <!-- Send a Message Form -->
