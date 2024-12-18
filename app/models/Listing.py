@@ -14,8 +14,7 @@ class Listing(db.Model):
     mime_type = db.Column(db.String(100), nullable=True)
     price = db.Column(db.Float, nullable=True)  
     username = db.Column(db.String(80), nullable=False)  
-
-
+    
     created_at = db.Column(db.DateTime, default=db.func.now())
     transactions = db.relationship('Transaction', backref='parent_listing', lazy=True)
 

@@ -39,11 +39,12 @@
         h1 { color: #192a56; text-align: center; }
         p { margin: 10px 0; }
         textarea {
-            width: 100%;
+            width: calc(100% - 20px); /* Verminder de breedte met 20px */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             margin-top: 10px;
+            margin-right: 20px; /* Ruimte rechts */
             font-family: 'Coiny', cursive;
         }
         button {
@@ -77,24 +78,23 @@
         {% if transaction %}
             <p><strong>Price:</strong> €{{ transaction.price }}</p>
             <p><strong>Status:</strong> {{ transaction.status }}</p>
-        
         {% endif %}
         {% if task.photo %}
-        <img src="{{ url_for('static', filename='uploads/' ~ task.photo) }}" alt="Task Photo" style="width:100%; margin-top:20px;">
+            <img src="{{ url_for('get_image', listing_id=task.id) }}" alt="Task Photo" 
+                style="width: 100px; height: 100px; border-radius: 5px;">
+        {% else %}
+            <img src="{{ url_for('static', filename='images/default.png') }}" alt="Default Photo" 
+                style="width: 100px; height: 100px; border-radius: 5px;">
         {% endif %}
 
         <!-- Send a Message Form -->
         <h2>Send a Message</h2>
-    <form action="{{ url_for('send_message', task_id=task.id) }}" method="POST">
-        <label for="recipient">Send to:</label>
-        <input type="text" name="recipient" value="{{ task.username }}" readonly>
-        <textarea name="message" rows="3" placeholder="Type your message here..." required></textarea><br>
-        <button type="submit">Send Message</button>
-    </form>
-
-
-
-        
+        <form action="{{ url_for('send_message', task_id=task.id) }}" method="POST">
+            <label for="recipient">Send to:</label>
+            <input type="text" name="recipient" value="{{ task.username }}" readonly>
+            <textarea name="message" rows="3" placeholder="Type your message here..." required></textarea><br>
+            <button type="submit">Send Message</button>
+        </form>
     </div>
 </body>
 </html>
