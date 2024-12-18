@@ -154,9 +154,13 @@
         <!-- Chat box -->
         <div class="chat-box">
             {% for msg in chat['messages'] %}
-                <div class="message {% if msg.sender_username == username %}sent{% else %}received{% endif %}">
-                    <strong>{{ msg.sender_username }}:</strong> {{ msg.message }}
-                </div>
+            <div class="message {% if msg.sender_username == username %}sent{% else %}received{% endif %}">
+                <strong>{{ msg.sender_username }}:</strong> {{ msg.message }}<br>
+                <small style="color: #192a56; font-size: 12px;">
+                    {{ msg.timestamp.strftime('%H:%M %d/%m') }}
+                </small>
+            </div>
+            
             {% endfor %}
         </div>
 
