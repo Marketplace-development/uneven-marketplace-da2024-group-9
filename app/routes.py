@@ -24,7 +24,7 @@ def init_routes(app):
     def login():
         if request.method == 'POST':
             username = request.form['username']
-            # Simuleer validatie voor studenten en technici
+           
             student = Student.query.filter_by(username=username).first()
             technician = Technician.query.filter_by(username=username).first()
 
@@ -45,7 +45,7 @@ def init_routes(app):
     def register():
         if request.method == 'POST':
             try:
-                # Data ophalen uit formulier
+                
                 username = request.form['username']
                 first_name = request.form['firstname']
                 last_name = request.form['lastname']
@@ -53,9 +53,9 @@ def init_routes(app):
                 phone_number = request.form['phone']
                 role = request.form['user_type']
 
-                print(f"Received data - Username: {username}, Role: {role}")  # Debugging
+                print(f"Received data - Username: {username}, Role: {role}")  
 
-                # Validatie voor duplicate gebruikers
+                
                 if role == 'student':
                     if Student.query.filter_by(username=username).first():
                         flash('Student username already exists!', 'error')
@@ -70,22 +70,22 @@ def init_routes(app):
                     flash('Invalid role selected!', 'error')
                     return redirect(url_for('register'))
 
-                # Toevoegen aan database
+                
                 db.session.add(new_user)
                 db.session.commit()
                 flash('Registration successful! Please login.', 'success')
                 return redirect(url_for('login'))
             
             except Exception as e:
-                db.session.rollback()  # Zorg dat er geen corrupte transacties ontstaan
-                print(f"Error during registration: {e}")  # Log fout
+                db.session.rollback()  
+                print(f"Error during registration: {e}")  
                 flash('An error occurred during registration.', 'error')
                 return redirect(url_for('register'))
 
         return render_template('register.html')
     @app.route('/job_listing')
     def job_listing():
-        # Logica om job listings op te halen
+        
         technicians = Technician.query.all()
         tasks = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
             (Transaction.status != "completed") | (Transaction.status == None)
@@ -99,12 +99,12 @@ def init_routes(app):
     def technician_dashboard():
         selected_category = request.args.get('category', default=None)
 
-        # Maak een query voor alle taken
+        
         query = Listing.query.outerjoin(Transaction, Listing.id == Transaction.listing_id).filter(
             (Transaction.status != "completed") | (Transaction.status == None)
         )
 
-        # Filter op geselecteerde categorie
+        
         if selected_category and selected_category in ['Plumbing', 'Electricity', 'Windows and Doors', 'Locks', 'Furniture', 'Other']:
             query = query.filter(Listing.category == selected_category)
 
@@ -118,7 +118,7 @@ def init_routes(app):
     def add_listing():
         avg_price = None
 
-        # Handle POST Request - Nieuwe Listing Toevoegen
+        
         if request.method == 'POST':
             title = request.form['title']
             category = request.form['category']
@@ -134,10 +134,10 @@ def init_routes(app):
             mime_type = None
 
             if photo and photo.filename != '':
-                photo_data = photo.read()  # Lees de foto als binary data
+                photo_data = photo.read()  
                 mime_type = photo.mimetype
 
-            # Voeg de nieuwe listing toe
+            
             new_listing = Listing(
                 title=title,
                 category=category,
@@ -148,7 +148,7 @@ def init_routes(app):
                 photo=photo_data,
                 mime_type=mime_type,
                 username=username,
-                student_id=student.id  # Huidige gebruiker
+                student_id=student.id  
             )
             db.session.add(new_listing)
             db.session.commit()
@@ -156,7 +156,7 @@ def init_routes(app):
             flash('Listing successfully added!', 'success')
             return redirect(url_for('job_listing'))
 
-        # Handle AJAX-aanroep voor gemiddelde prijs
+        
         if request.args.get('category'):
             category = request.args.get('category')
             avg_price = db.session.query(func.avg(Transaction.price)).join(Listing).filter(
@@ -164,14 +164,14 @@ def init_routes(app):
             ).scalar()
             return jsonify({'avg_price': round(avg_price, 2) if avg_price else 'N/A'})
 
-        # Render de pagina voor GET Request (zonder AJAX)
+        
         return render_template('add_listing.html', avg_price=avg_price)
 
     @app.route('/image/<int:listing_id>')
     def get_image(listing_id):
         listing = Listing.query.get_or_404(listing_id)
         if not listing.photo:
-            return '', 404  # Geen afbeelding gevonden
+            return '', 404  
         return Response(listing.photo, mimetype=listing.mime_type)
 
     @app.route('/chats')
@@ -182,22 +182,22 @@ def init_routes(app):
         
         username = session['username']
 
-        # Haal het Student- of Technician-object op voor de huidige gebruiker
+        
         user = Student.query.filter_by(username=username).first() or Technician.query.filter_by(username=username).first()
         if not user:
             flash("User not found.", "error")
             return redirect(url_for('login'))
 
-        # Zoek conversaties waar de huidige gebruiker deelnemer is
+        
         if isinstance(user, Student):
             conversations = Conversation.query.filter_by(student_id=user.id).order_by(Conversation.last_message_time.desc()).all()
         elif isinstance(user, Technician):
             conversations = Conversation.query.filter_by(technician_id=user.id).order_by(Conversation.last_message_time.desc()).all()
 
-        # Verzamel alle conversaties met bijbehorende berichten
+        
         chats = []
         for convo in conversations:
-            # Bepaal de gesprekspartner
+            
             if isinstance(user, Student):
                 partner = Technician.query.get(convo.technician_id)
             else:
@@ -205,10 +205,10 @@ def init_routes(app):
             
             partner_username = partner.username if partner else "Unknown"
 
-            # Haal berichten binnen de conversatie op
+            
             messages = ChatMessage.query.filter_by(conversation_id=convo.id).order_by(ChatMessage.timestamp.asc()).all()
 
-            # Haal rating op voor technicians indien van toepassing
+            
             technician_rating = None
             technician_rating_count = None
             if isinstance(partner, Technician):
@@ -231,7 +231,7 @@ def init_routes(app):
         recipient_username = request.form.get('recipient')
         sender_username = session['username']
 
-        # Valideer sender en recipient
+        
         sender = Student.query.filter_by(username=sender_username).first() or Technician.query.filter_by(username=sender_username).first()
         recipient = Student.query.filter_by(username=recipient_username).first() or Technician.query.filter_by(username=recipient_username).first()
 
@@ -239,11 +239,11 @@ def init_routes(app):
             flash("Invalid sender or recipient.", "error")
             return redirect(url_for('chats'))
 
-        # Bepaal student en technician
+        
         student = sender if isinstance(sender, Student) else recipient
         technician = sender if isinstance(sender, Technician) else recipient
 
-        # Controleer of er al een conversatie bestaat
+        
         conversation = Conversation.query.filter_by(student_id=student.id, technician_id=technician.id).first()
 
         if not conversation:
@@ -255,7 +255,7 @@ def init_routes(app):
             db.session.add(conversation)
             db.session.flush()
 
-        # Voeg bericht toe
+        
         new_message = ChatMessage(
             sender_username=sender_username,
             receiver_username=recipient_username,
@@ -265,7 +265,7 @@ def init_routes(app):
         )
         db.session.add(new_message)
 
-        # Update laatste berichttijd
+        
         conversation.last_message_time = datetime.now()
         db.session.commit()
 
@@ -283,7 +283,7 @@ def init_routes(app):
             flash("You must be logged in to view this page.", "error")
             return redirect(url_for('login'))
         
-        # Haal taakdetails op uit de database
+        
         task = Listing.query.get_or_404(task_id)
         transaction = Transaction.query.filter_by(listing_id=task_id).first()
         if request.method == 'POST':
@@ -291,7 +291,7 @@ def init_routes(app):
             recipient = task.username
             message = request.form['message']
 
-            # Sla het bericht op in de database
+            
             new_message = ChatMessage(
                 sender_username=sender,
                 receiver_username=recipient,
@@ -308,12 +308,11 @@ def init_routes(app):
 
     @app.route('/profile')
     def profile():
-        # Haal de huidige gebruiker op uit de sessie
+        
         username = session.get('username')
         if not username:
-            return redirect(url_for('login'))  # Gebruiker moet ingelogd zijn
-
-        # Controleer of de gebruiker een student is
+            return redirect(url_for('login'))  
+        
         student = Student.query.filter_by(username=username).first()
         if student:
             user_type = 'student'
@@ -322,7 +321,7 @@ def init_routes(app):
                                 user_type=user_type,
                                 back_link=url_for('job_listing'))
 
-        # Controleer of de gebruiker een technieker is
+        
         technician = Technician.query.filter_by(username=username).first()
         if technician:
             user_type = 'technician'
@@ -333,12 +332,12 @@ def init_routes(app):
                                 average_rating=average_rating,
                                 back_link=url_for('technician_dashboard'))
 
-        # Als de gebruiker niet in een van de tabellen staat, log uit
+       
         return redirect(url_for('logout'))
     
     @app.route('/logout')
     def logout():
-        session.clear()  # Leeg de sessie om de gebruiker uit te loggen
+        session.clear()  
         return redirect(url_for('login'))
     
     @app.route('/contact')
@@ -349,7 +348,7 @@ def init_routes(app):
     def get_avg_price():
         category = request.json.get('category')
 
-        # Bereken gemiddelde prijs van alle transacties met die categorie
+        
         avg_price = db.session.query(db.func.avg(Transaction.price)).join(Listing).filter(Listing.category == category).scalar()
 
         return {'avg_price': round(avg_price, 2) if avg_price else 0}
@@ -362,17 +361,17 @@ def init_routes(app):
             return redirect(url_for('login'))
 
         technician_username = session['username']
-        price = request.form['price']  # Prijs wordt opgegeven bij aanmaak
+        price = request.form['price']  
 
-        # Controleer of listing bestaat
+       
         listing = Listing.query.get_or_404(listing_id)
 
-        # Maak nieuwe transactie
+        
         new_transaction = Transaction(
             listing_id=listing.id,
-            student_username=listing.username,  # Wie de taak postte
+            student_username=listing.username, 
             technician_username=technician_username,
-            price=float(price),  # Zorg dat de prijs een float is
+            price=float(price),  
             status="pending"
         )
         db.session.add(new_transaction)
@@ -400,7 +399,7 @@ def init_routes(app):
         listing = Listing.query.get_or_404(task_id)
         price = listing.price
         student = listing.student
-        # Zoek of er al een transactie bestaat, zo niet, maak er een aan
+       
         technician = Technician.query.filter_by(username=technician_username).first()
         
         transaction = Transaction.query.filter_by(listing_id=task_id).first()
@@ -409,9 +408,9 @@ def init_routes(app):
             transaction = Transaction(
                 listing_id=task_id,
                 student_id = student.id,
-                technician_id = technician.id,  # Degene die de taak aanmaakte
+                technician_id = technician.id,  
                 technician_username=technician.username,
-                price=price,  # Geen prijs nodig, wordt apart beheerd
+                price=price,  
                 status="completed"
             )
             db.session.add(transaction)
@@ -420,7 +419,7 @@ def init_routes(app):
             transaction.price = price
             technician = transaction.technician
 
-        # Update de rating van de technician
+        
         technician = Technician.query.filter_by(username=technician_username).first()
         if technician:
             technician.rating_count += 1
