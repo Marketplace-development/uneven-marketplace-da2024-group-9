@@ -43,3 +43,6 @@ Via virtual environments zijn we zeker dat elke gebruiker/developer/... dezelfde
 5. 🔴 Wil je uit de virtuele omgeving gaan? Deactiveer de virtuele omgeving na gebruik met `deactivate`. 
 
 </br>
+
+Figma:![image](https://github.com/user-attachments/assets/2f7c5516-4300-4a2a-8a97-510fefdad016)
+
